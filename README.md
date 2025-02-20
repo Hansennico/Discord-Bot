@@ -48,3 +48,6 @@ py ./main.py
 1. go to [Discord Developer Portal — My Applications](https://discord.com/developers/applications)
 2. in OAuth2 Tab check **bot,** then scroll and check all permision your bot need
 3. copy the generated url to your browser
+
+## If you want edit or adding new feature
+[Edit.md](./Edit.md)
