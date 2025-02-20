@@ -50,4 +50,4 @@ py ./main.py
 3. copy the generated url to your browser
 
 ## If you want edit or adding new feature
-[Edit.md](./Edit.md)
+[READ HERE](./Edit.md)
