@@ -39,12 +39,12 @@ chmod +x ./Discord/Scripts/Activate
 
 2. run main.py
 
-   ```bash
-   py ./main.py
-   ```
+```bash
+py ./main.py
+```
 
-   ## Invite bot
+## Invite bot
 
-   1. go to [Discord Developer Portal — My Applications](https://discord.com/developers/applications)
-   2. in OAuth2 Tab check **bot,** then scroll and check all permision your bot need
-   3. copy the generated url to your browser
+1. go to [Discord Developer Portal — My Applications](https://discord.com/developers/applications)
+2. in OAuth2 Tab check **bot,** then scroll and check all permision your bot need
+3. copy the generated url to your browser
