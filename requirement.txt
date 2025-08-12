@@ -1,0 +1,4 @@
+PyNacl
+termcolor
+dotenv
+discord

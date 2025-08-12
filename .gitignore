@@ -1,4 +1,20 @@
-# ignore
-*.env
+# Ignore VSCode settings folder
+.vscode/
 
+# Ignore Discord.py virtual environment folder
+.discordpyenv/
+
+# Ignore environment file
+.env
+
+# Ignore __pycache__ folders anywhere
 **/__pycache__/
+
+# Ignore all .db files anywhere
+*.db
+
+# Ignore logs folder at project root
+logs/
+
+# Ignore start.sh script
+start.sh
