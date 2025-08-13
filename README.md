@@ -1,53 +1,34 @@
 # Discord-Bot
-
-a simple python discord bot tamplate that can reply to user and run command with prefix
+a simple python discord bot tamplate that can reply to user and run command with prefix <br>
+can interact with sqlite database and n8n webhook
 
 ## Requirement
-
 [Python](https://www.python.org/downloads/ "Python Download Link")
 
-## First Setup
-
-1. Download Source code or clone this repo using git
-
+## Setup
 ```bash
 git clone https://github.com/Hansennico/Discord-Bot.git
+cd Discord-Bot
+python -m venv .discordpyenv
+source .discordpyenv/bin/activate
+pip install -r requirements.txt
+cp env_template .env
 ```
-
-2. go to [Discord Developer Portal — My Applications](https://discord.com/developers/applications) and create an application
-   then go to Bot tab and press Reset Token (don't share token with anyone)
-3. put your discord bot token in `.env` file
+- Go to [Discord Developer Portal — My Applications](https://discord.com/developers/applications) and create an application
+then go to Bot tab and press Reset Token
+- Put your discord bot token in `.env` file
 
 ## Run bot
-
-1. to run the discord bot first you need to active python virtual environtment
-
-if you on windows :
-
 ```bash
-cd Discord-Bot
-.\Discord\Scripts\Activate.ps1
-```
-
-if you on Linux :
-
-```bash
-cd Discord-Bot
-chmod +x ./Discord/Scripts/Activate
-./Discord/Scripts/Activate
-```
-
-2. run main.py
-
-```bash
+source .discordpyenv/bin/activate
 py ./main.py
 ```
 
 ## Invite bot
-
 1. go to [Discord Developer Portal — My Applications](https://discord.com/developers/applications)
 2. in OAuth2 Tab check **bot,** then scroll and check all permision your bot need
 3. copy the generated url to your browser
 
-## If you want edit or adding new feature
+## Project Structure
 [READ HERE](./Edit.md)
+
