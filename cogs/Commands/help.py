@@ -10,24 +10,48 @@ class Help(commands.Cog):
     @cooldown(1, 5, BucketType.user)
     @commands.command()
     async def help(self, ctx):
-        embed = discord.Embed(title="Hansen Bot",
-                              colour=discord.Color.blue(),
-                              timestamp=datetime.now())
+        embed = discord.Embed(
+            title="Hansen Bot",
+            colour=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
 
-        embed.add_field(name="<help",
-                        value="display all available commands",
-                        inline=False)
-        embed.add_field(name="<ping",
-                        value="display bot latency",
-                        inline=True)
-        embed.add_field(name="<roll",
-                        value="roll a number *(default 100)*",
-                        inline=False)
+        # General Commands
+        embed.add_field(
+            name="📜 General",
+            value=(
+                "`<help` → Display all available commands\n"
+                "`<ping` → Display bot latency\n"
+                "`<roll [max]` → Roll a number *(default 100)*"
+            ),
+            inline=False
+        )
+
+        # Gamble Commands
+        embed.add_field(
+            name="🎲 Gamble",
+            value=(
+                "`<cf [h/t] [amount]` → Coin flip game (Heads/Tails)\n"
+                "`<dice [amount]` → Dice roll game"
+            ),
+            inline=False
+        )
+
+        # Voice Commands
+        embed.add_field(
+            name="🎤 Voice",
+            value=(
+                "`<join` → Bot joins your voice channel\n"
+                "`<leave` → Bot leaves the current voice channel"
+            ),
+            inline=False
+        )
 
         embed.set_image(url="https://cdn.oneesports.id/cdn-data/sites/2/2022/03/GenshinImpact_YaeMikoWallpaper4-1024x576.jpg")
-
-        embed.set_footer(text="<3",
-                        icon_url="https://slate.dan.onl/slate.png")
+        embed.set_footer(
+            text="<3",
+            icon_url="https://slate.dan.onl/slate.png"
+        )
 
         await ctx.send(embed=embed)
 
