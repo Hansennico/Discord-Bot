@@ -1,85 +1,91 @@
-import discord, sqlite3, os, requests
+import discord, os, requests
 from discord.ext import commands
 from dotenv import load_dotenv
 
-DB_FILE = "settings.db"
-
+# --- Setup configuration ---
 load_dotenv()
 N8N_WEBHOOK_URL = os.getenv("N8N_URL")
+# N8N_WEBHOOK_URL = os.getenv("N8N_TEST_URL")
 N8N_AUTH_TOKEN = os.getenv("N8N_TOKEN")
 
-# --- Setup database ---
-def init_db():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS bot_settings (
-            guild_id INTEGER PRIMARY KEY,
-            listen_channel_id INTEGER
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-def set_listen_channel(guild_id, channel_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("""
-        INSERT INTO bot_settings (guild_id, listen_channel_id)
-        VALUES (?, ?)
-        ON CONFLICT(guild_id) DO UPDATE SET listen_channel_id=excluded.listen_channel_id
-    """, (guild_id, channel_id))
-    conn.commit()
-    conn.close()
-
-def get_listen_channel(guild_id):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("SELECT listen_channel_id FROM bot_settings WHERE guild_id=?", (guild_id,))
-    row = c.fetchone()
-    conn.close()
-    return row[0] if row else None
-
-
-class ChannelListener(commands.Cog):
+class N8nCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    @commands.has_permissions(manage_channels=True)
-    async def setchannel(self, ctx, channel: discord.TextChannel):
-        """Set the channel where the bot will listen."""
-        set_listen_channel(ctx.guild.id, channel.id)
-        await ctx.send(f"✅ Listening channel set to {channel.mention}")
+    @commands.command(name='n8n')
+    async def run_n8n_workflow(self, ctx, *, content: str):
+        """Sends user input to an n8n webhook and replies with the output."""
+        
+        # Build the payload to send to n8n
+        # We also include the channel_id to let n8n know where to send the reply
+        payload = {
+            "username": str(ctx.author),
+            "user_id": ctx.author.id,
+            "channel_id": ctx.channel.id, 
+            "content": content
+        }
+        
+        # Add a waiting message to let the user know the bot is processing
+        processing_message = await ctx.reply("⌛ Processing your request with n8n...")
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot:
-            return
-
-        listen_channel_id = get_listen_channel(message.guild.id)
-        if listen_channel_id and message.channel.id != listen_channel_id:
-            return  # Ignore messages outside the listening channel
-
-        # Here you can integrate with n8n or do your action
-        if not message.content.startswith("<"):
-            print(f"[n8n Trigger] {message.author}: {message.content}")
-            # Send to n8n webhook with auth header
-            headers = {
-                "Authorization": f"Bearer {N8N_AUTH_TOKEN}",
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "username": str(message.author),
-                "content": message.content
-            }
-            try:
-                r = requests.post(N8N_WEBHOOK_URL, json=payload, headers=headers)
-                print(f"n8n Response: {r.status_code} {r.text}")
-            except Exception as e:
-                print(f"Error sending to n8n: {e}")
+        headers = {
+            "Authorization": f"Bearer {N8N_AUTH_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            # Send the data to the n8n webhook
+            r = requests.post(N8N_WEBHOOK_URL, json=payload, headers=headers)
+            r.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
+            
+            # Debug: Print the raw response
+            print(f"Raw response: '{r.text}'")
+            print(f"Response status code: {r.status_code}")
+            print(f"Response headers: {dict(r.headers)}")
+            
+            # Check if response is empty
+            if not r.text.strip():
+                await processing_message.edit(content="❌ Empty response from n8n workflow. Check that you have a 'Respond to Webhook' node.")
+                return
+            
+            # Get the response as JSON
+            n8n_response_data = r.json()
+            
+            # Handle both array and object responses
+            final_message = "No reply message received from n8n."
+            
+            if isinstance(n8n_response_data, list) and len(n8n_response_data) > 0:
+                # If it's an array, get the first item
+                first_item = n8n_response_data[0]
+                if isinstance(first_item, dict):
+                    # Try different possible field names
+                    final_message = first_item.get("reply") or first_item.get("output") or first_item.get("text") or final_message
+            elif isinstance(n8n_response_data, dict):
+                # If it's directly an object - try different possible field names
+                final_message = n8n_response_data.get("reply") or n8n_response_data.get("output") or n8n_response_data.get("text") or final_message
+            
+            # Truncate message if it's too long for Discord (2000 char limit)
+            if len(final_message) > 1990:
+                final_message = final_message[:1990] + "..."
+            
+            # Edit the processing message with the final result
+            await processing_message.edit(content=final_message)
+            
+        except requests.exceptions.HTTPError as errh:
+            print(f"HTTP Error: {errh}")
+            await processing_message.edit(content=f"❌ An error occurred with the n8n webhook: {errh}")
+        except requests.exceptions.RequestException as err:
+            print(f"Request Error: {err}")
+            await processing_message.edit(content=f"❌ Failed to connect to n8n. Please check the URL.")
+        except ValueError as ve:
+            # This catches JSON decode errors
+            print(f"JSON Decode Error: {ve}")
+            print(f"Response content: {r.text}")
+            await processing_message.edit(content=f"❌ Invalid response format from n8n.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            await processing_message.edit(content=f"❌ An unexpected error occurred.")
 
 
 async def setup(bot):
-    init_db()
-    await bot.add_cog(ChannelListener(bot))
+    await bot.add_cog(N8nCommand(bot))
