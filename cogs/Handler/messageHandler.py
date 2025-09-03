@@ -22,7 +22,9 @@ class MessageHandler(commands.Cog):
         # Check if the message author is the bot itself
         if message.author == self.bot.user:
             return
-
+        if message.content.lower() == "hit":
+            return
+        
         # Check if the message starts with 'Hi' or 'Hello'
         if message.content.lower().startswith(('hi', 'hello')):
             response = random.choice(self.greetings)

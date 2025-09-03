@@ -1,8 +1,5 @@
-import discord
+import discord, sqlite3, random, re
 from discord.ext import commands
-import sqlite3
-import random
-import re
 
 class Gamble(commands.Cog):
     def __init__(self, bot):

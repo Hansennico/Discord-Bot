@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 # --- Setup configuration ---
 load_dotenv()
-N8N_WEBHOOK_URL = os.getenv("N8N_URL")
-# N8N_WEBHOOK_URL = os.getenv("N8N_TEST_URL")
+# N8N_WEBHOOK_URL = os.getenv("N8N_URL")
+N8N_WEBHOOK_URL = os.getenv("N8N_TEST_URL")
 N8N_AUTH_TOKEN = os.getenv("N8N_TOKEN")
 
 class N8nCommand(commands.Cog):
